@@ -1,20 +1,29 @@
-def board_to_str(board: list) -> str:
-    board_str = ""
+from random import randint
 
-    board_width = len(board)
-    board_height = len(board[0])
+from Board import Board
+
+
+def place_bombs(board: Board, difficulty: tuple) -> None:
+    bomb_list = []
+    board_width, board_height = difficulty[0]
     
-    HORIZONTAL_SEPARATOR = "-" * (board_width * 3 + (board_width + 1)) + "\n"
-    board_str += HORIZONTAL_SEPARATOR
-    for y in range(board_height):
-        board_str += "|"
-        for x in range(board_width):
-            display = board[x][y] or " "
-            board_str += f" {display} |"
-        board_str += "\n"
-        board_str += HORIZONTAL_SEPARATOR
-
-    return board_str.strip()
-
-def print_board(board: list) -> None:
-    print(board_to_str(board))
+    # place random mines
+    for i in range(difficulty[2]):
+        while True:
+            # TODO: check if current bomb count doesn't exceed max available space. will cause an infinite loop
+            bomb = (randint(0, board_width - 1), randint(0, board_height - 1))
+            if bomb not in bomb_list:
+                bomb_list.append(bomb)
+                break        
+    for bomb in bomb_list:
+        board.setBomb(bomb)
+        
+    # place numbers around bombs
+    for x in range(board_width):
+        for y in range(board_height):
+            if board[x][y].isBomb:
+                    for i in [-1, 0, 1]:
+                        for j in [-1, 0, 1]:
+                            if ((x + i) == board_width or (x + i) < 0) or ((y + j) == board_height or (y + j) < 0):
+                                continue
+                            board[x + i][y + j].bombNear()
