@@ -2,13 +2,5 @@ from Board import Board
 from config import DIFFICULTY
 from helpers import place_bombs
 
-board_width, board_height = DIFFICULTY[0]
-board = Board(board_width, board_height)
-
-def board_setup():
+def board_setup(board):
     place_bombs(board, DIFFICULTY)
-
-board_setup()
-
-
-print(board)

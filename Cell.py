@@ -1,16 +1,19 @@
 class Cell:
     def __init__(self):
+        self.known = False
         self.isBomb = False
         self.count = 0
-        # self.unknown = True
-        # self.pixel_color = 
 
     def __str__(self):
         if self.isBomb:
             return "X"
-        # elif self.unknown:
-        #     return "?"
+        elif self.known:
+            return "?"
         return str(self.count) if self.count else " "
+
+    def setValue(self, num: int):
+        self.count = num
+        self.known = True
 
     def setBomb(self):
         self.isBomb = True

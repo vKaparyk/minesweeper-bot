@@ -22,8 +22,6 @@ def place_bombs(board: Board, difficulty: tuple) -> None:
     for x in range(board_width):
         for y in range(board_height):
             if board[x][y].isBomb:
-                    for i in [-1, 0, 1]:
-                        for j in [-1, 0, 1]:
-                            if ((x + i) == board_width or (x + i) < 0) or ((y + j) == board_height or (y + j) < 0):
-                                continue
-                            board[x + i][y + j].bombNear()
+                cells = board.get_list_near_coords((x, y))
+                for cell in cells:
+                    cell.bombNear()
