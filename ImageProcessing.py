@@ -1,45 +1,67 @@
 from PIL import ImageGrab
 
-from config import DIFFICULTY, COLOR_DICT
+from config import DIFFICULTY, COLOR_DICT, BLACK_COLOR_DICT
 from Board import Board
+from FoundException import Found
 
-# image = ImageGrab.grab(bbox=DIFFICULTY[1])
 
-# image.show()
-
-# image = ImageGrab.grab(bbox=DIFFICULTY[1])
-
-# image.show()
-
-def update_board(board: Board):
+def update_board(board: Board) -> list:
     CENTER_SQUARE_SIZE = 6
+    # TODO: apparently, it's very precise. no need to scan such large square
     CELL_SIZE = 50
-    INITIAL_OFFSET = (CELL_SIZE - CENTER_SQUARE_SIZE) / 2 - 1 
+    INITIAL_OFFSET = (CELL_SIZE - CENTER_SQUARE_SIZE) / 2 - 1
     board_size, screen_size, _ = DIFFICULTY
+    width, height = board_size
+
     current_screen = ImageGrab.grab(bbox=screen_size)
     current_screen = current_screen.load()
-    
-    width, height = board_size
-    
+
     for x in range(width):
         for y in range(height):
-            if board[x][y].known:
+            if board[(x, y)].known:
                 continue
-            
-            for w in range(CENTER_SQUARE_SIZE):
-                for h in range(CENTER_SQUARE_SIZE):
-                    pixel = current_screen[x * CELL_SIZE + INITIAL_OFFSET + w, y * CELL_SIZE + INITIAL_OFFSET + h]
-                    if pixel in COLOR_DICT:
-                        board.setValue((w, h), COLOR_DICT.get(pixel))
-                        continue
-                    
-                    
-                    print(pixel)
-        
-            # scan image, set cell properly
-            # if color, set number
-            # else if white corner, then ?
-            # else if gray center, then set number 0
-            # else TBD,
-    
-    
+            try:
+                # TODO: check if more optimal to do many if/break statements than try/except. could be faster
+                # check for 1 - 6 (possibly 8 later)
+                for w in range(CENTER_SQUARE_SIZE):
+                    for h in range(CENTER_SQUARE_SIZE):
+                        pixel = current_screen[
+                            x * CELL_SIZE + INITIAL_OFFSET + w,
+                            y * CELL_SIZE + INITIAL_OFFSET + h,
+                        ]
+                        if pixel in COLOR_DICT:
+                            board.setValue((x, y), COLOR_DICT.get(pixel))
+                            raise Found
+
+                # check for 7 at different location
+                for w in range(CENTER_SQUARE_SIZE):
+                    for h in range(CENTER_SQUARE_SIZE):
+                        pixel = current_screen[
+                            x * CELL_SIZE + INITIAL_OFFSET + w, y * CELL_SIZE + 10 + h
+                        ]
+                        if pixel in BLACK_COLOR_DICT:
+                            board.setValue((x, y), COLOR_DICT.get(pixel))
+                            raise Found
+
+                # check for unknown (white TL corner)
+                for w in range(CENTER_SQUARE_SIZE):
+                    for h in range(CENTER_SQUARE_SIZE):
+                        pixel = current_screen[
+                            x * CELL_SIZE + 1 + w, y * CELL_SIZE + 1 + h
+                        ]
+                        if pixel == (255, 255, 255):
+                            raise Found
+
+                # set to 0 if grey exists
+                for w in range(CENTER_SQUARE_SIZE):
+                    for h in range(CENTER_SQUARE_SIZE):
+                        pixel = current_screen[
+                            x * CELL_SIZE + INITIAL_OFFSET + w,
+                            y * CELL_SIZE + INITIAL_OFFSET + h,
+                        ]
+                        if pixel == (189, 189, 189):
+                            board.setValue((x, y), 0)
+                            raise Found
+
+            except Found:
+                pass
