@@ -13,6 +13,8 @@ def update_board(board: Board) -> list:
     board_size, screen_size, _ = DIFFICULTY
     width, height = board_size
 
+    new_cells: list = []
+
     current_screen = ImageGrab.grab(bbox=screen_size)
     current_screen = current_screen.load()
 
@@ -20,48 +22,64 @@ def update_board(board: Board) -> list:
         for y in range(height):
             if board[(x, y)].known:
                 continue
-            try:
-                # TODO: check if more optimal to do many if/break statements than try/except. could be faster
-                # check for 1 - 6 (possibly 8 later)
-                for w in range(CENTER_SQUARE_SIZE):
-                    for h in range(CENTER_SQUARE_SIZE):
-                        pixel = current_screen[
-                            x * CELL_SIZE + INITIAL_OFFSET + w,
-                            y * CELL_SIZE + INITIAL_OFFSET + h,
-                        ]
-                        if pixel in COLOR_DICT:
-                            board.setValue((x, y), COLOR_DICT.get(pixel))
-                            raise Found
+            found: bool = False
+            # check for 1 - 6 (possibly 8 later)
+            for w in range(CENTER_SQUARE_SIZE):
+                for h in range(CENTER_SQUARE_SIZE):
+                    pixel = current_screen[
+                        x * CELL_SIZE + INITIAL_OFFSET + w,
+                        y * CELL_SIZE + INITIAL_OFFSET + h,
+                    ]
+                    if pixel in COLOR_DICT:
+                        board.setValue((x, y), COLOR_DICT.get(pixel))
+                        new_cells.append((x, y))
+                        found = True
+                        break
+                if found:
+                    break
+            if found:
+                continue
 
-                # check for 7 at different location
-                for w in range(CENTER_SQUARE_SIZE):
-                    for h in range(CENTER_SQUARE_SIZE):
-                        pixel = current_screen[
-                            x * CELL_SIZE + INITIAL_OFFSET + w, y * CELL_SIZE + 10 + h
-                        ]
-                        if pixel in BLACK_COLOR_DICT:
-                            board.setValue((x, y), COLOR_DICT.get(pixel))
-                            raise Found
+            # check for 7 at different location
+            for w in range(CENTER_SQUARE_SIZE):
+                for h in range(CENTER_SQUARE_SIZE):
+                    pixel = current_screen[
+                        x * CELL_SIZE + INITIAL_OFFSET + w, y * CELL_SIZE + 10 + h
+                    ]
+                    if pixel in BLACK_COLOR_DICT:
+                        board.setValue((x, y), COLOR_DICT.get(pixel))
+                        new_cells.append((x, y))
+                        found = True
+                        break
+                if found:
+                    break
+            if found:
+                continue
 
-                # check for unknown (white TL corner)
-                for w in range(CENTER_SQUARE_SIZE):
-                    for h in range(CENTER_SQUARE_SIZE):
-                        pixel = current_screen[
-                            x * CELL_SIZE + 1 + w, y * CELL_SIZE + 1 + h
-                        ]
-                        if pixel == (255, 255, 255):
-                            raise Found
+            # check for unknown (white TL corner)
+            for w in range(CENTER_SQUARE_SIZE):
+                for h in range(CENTER_SQUARE_SIZE):
+                    pixel = current_screen[x * CELL_SIZE + 1 + w, y * CELL_SIZE + 1 + h]
+                    if pixel == (255, 255, 255):
+                        found = True
+                        break
+                if found:
+                    break
+            if found:
+                continue
 
-                # set to 0 if grey exists
-                for w in range(CENTER_SQUARE_SIZE):
-                    for h in range(CENTER_SQUARE_SIZE):
-                        pixel = current_screen[
-                            x * CELL_SIZE + INITIAL_OFFSET + w,
-                            y * CELL_SIZE + INITIAL_OFFSET + h,
-                        ]
-                        if pixel == (189, 189, 189):
-                            board.setValue((x, y), 0)
-                            raise Found
+            # set to 0 if grey exists
+            for w in range(CENTER_SQUARE_SIZE):
+                for h in range(CENTER_SQUARE_SIZE):
+                    pixel = current_screen[
+                        x * CELL_SIZE + INITIAL_OFFSET + w,
+                        y * CELL_SIZE + INITIAL_OFFSET + h,
+                    ]
+                    if pixel == (189, 189, 189):
+                        board.setValue((x, y), 0)
+                        found = True
+                        break
+                if found:
+                    break
 
-            except Found:
-                pass
+    return new_cells
