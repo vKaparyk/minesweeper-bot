@@ -35,7 +35,9 @@ class Board(dict):
         x, y = location
         cells = []
         local_offset = [-1, 0, 1]
-        for i in local_offset:
-            for j in local_offset:
-                cells.append(self[(x + i, y + j)])
+        for j in local_offset:
+            for i in local_offset:
+                cell = self.get((x + i, y + j), None)
+                if cell and not (not i and not j): 
+                    cells.append(cell)
         return cells
