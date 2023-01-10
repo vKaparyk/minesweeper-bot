@@ -1,4 +1,5 @@
-from Cell import Cell
+from ExtraClass.Cell import Cell
+from ExtraClass.NearbyCells import NearbyCells
 
 
 class Board(dict):
@@ -9,7 +10,7 @@ class Board(dict):
         # init all cells
         for i in range(self.width):
             for j in range(self.height):
-                self[(i, j)] = Cell()
+                self[(i, j)] = Cell((i, j))
 
     def __str__(self):
         board_str = ""
@@ -26,18 +27,27 @@ class Board(dict):
 
     def setBomb(self, location: tuple):
         self[location].setBomb()
+        nearby_cells = NearbyCells(self, location)
+        for cell in nearby_cells:
+            if cell.known and not cell.isBomb:
+                cell.local_count -= 1
 
     def setValue(self, location: tuple, num: int):
         self[location].setValue(num)
 
-    def get_list_near_coords(self, location: tuple) -> list:
-        # x, y 0-index coords
-        x, y = location
-        cells = []
-        local_offset = [-1, 0, 1]
-        for j in local_offset:
-            for i in local_offset:
-                cell = self.get((x + i, y + j), None)
-                if cell and not (not i and not j): 
-                    cells.append(cell)
-        return cells
+    def getAllLocalNumbers(self) -> list:
+        all_nums = []
+        for i in self:
+            cell = self.get(i)
+            if cell.isBomb or not cell.known or not cell.local_count:
+                continue
+            all_nums.append(i)
+        return all_nums
+
+    def returnNumberedCells(self, location: tuple) -> list:
+        numbered_cells = []
+        nearby = NearbyCells(self, location)
+        for cell in nearby:
+            if cell.known and not cell.isBomb and cell.count > 0:
+                numbered_cells.append(cell.location)
+        return numbered_cells
