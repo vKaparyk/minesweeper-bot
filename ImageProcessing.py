@@ -1,7 +1,7 @@
 from PIL import ImageGrab
 
 from config import DIFFICULTY, COLOR_DICT, BLACK_COLOR_DICT
-from Board import Board
+from ExtraClass.Board import Board
 
 
 def update_board(board: Board) -> list:
@@ -10,6 +10,7 @@ def update_board(board: Board) -> list:
     VERTICAL_OFFSET = 36
 
     board_size, screen_size, _ = DIFFICULTY
+    screen_size = screen_size[0] + screen_size[1]
     width, height = board_size
 
     new_cells: list = []
