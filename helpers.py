@@ -1,6 +1,6 @@
 from random import randint
 
-from Board import Board
+from ExtraClass.Board import Board
 
 
 def place_bombs(board: Board, difficulty: tuple) -> None:
